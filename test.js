@@ -526,16 +526,22 @@ var rectGroups = [
                 }]
         }
 ],
+    color = d3.scale.category20(),
     rectsData;
+d3.json("names2.json", function (res) {
+    console.log(res);
+    rectsData = getLayout(res);
+    draw(rectsData);
+});
 function getLayout(data) {
     var size = [800, 800],
         spiral = archimedeanSpiral(size),
         // spiral = rectangularSpiral(size),
-        widthScale = [5, 20],
+        widthScale = [20, 100],
         bounds = [],
         outputRects = [],
         spiralInt = 0,
-        spiralStep = 0.2,
+        spiralStep = 0.5,
         padding = 1,
         isConflicting,
         groupsNum,
@@ -544,13 +550,16 @@ function getLayout(data) {
         rectsLength,
         bound,
         i,
-        test = 0;
+        test = 0,
+        numMax = data[0].num;
     groupsNum = data.length;
+    groupsNum = 100;
     data = data.sort(function (a, b) {
         return b.rectLength - a.rectLength;
     });
     for (i = 0; i < groupsNum; i++) {
         group = data[i];
+        group.rectLength = (widthScale[1] - widthScale[0]) / numMax * group.num + widthScale[0];
         rectsLength = group.rects.length;
         do {
             bound = getBound(spiral(spiralInt), group.rectLength, rectsLength);
@@ -564,9 +573,9 @@ function getLayout(data) {
     }
     return outputRects;
 }
-rectsData = getLayout(rectGroups);
-console.log(rectsData);
-draw(rectsData);
+// rectsData = getLayout(rectGroups);
+// console.log(rectsData);
+// draw(rectsData);
 function archimedeanSpiral(size) {
     var e = size[0] / size[1];
     return function (t) {
@@ -578,7 +587,7 @@ function rectangularSpiral(size) {
         dx = dy * size[0] / size[1],
         x = 0,
         y = 0;
-    return function(t) {
+    return function (t) {
         var sign = t < 0 ? -1 : 1;
         // See triangular numbers: T_n = n * (n + 1) / 2.
         switch ((Math.sqrt(1 + 4 * sign * t) - sign) & 3) {
@@ -657,7 +666,7 @@ function draw(rects) {
             return d.height;
         })
         .style("fill", function (d, i) {
-            // return color(i);
-            return "steelblue";
+            return color(d.type);
+            // return "steelblue";
         });
 }
